@@ -1,7 +1,10 @@
-package com.SlotSync.SlotSync.Utility;
+package com.SlotSync.SlotSync.Utilities;
 
 import com.SlotSync.SlotSync.Entity.Sequence;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
+
+import java.security.SecureRandom;
+
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -32,4 +35,15 @@ public class Utilities {
         if (seq == null) throw new JobPortalException("Unable to get sequence id for key :" + key);
         return seq.getSeq();
     }
-}
+
+    public static String generateOtp() {
+        StringBuilder otp = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < 6; i++) {
+            otp.append(random.nextInt(10));
+        }
+        return otp.toString();
+    }
+     
+    }
+

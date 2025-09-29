@@ -1,4 +1,4 @@
-package com.SlotSync.SlotSync.Utility;
+package com.SlotSync.SlotSync.Utilities;
 
 import com.SlotSync.SlotSync.Exception.JobPortalException;
 import jakarta.validation.ConstraintViolation;

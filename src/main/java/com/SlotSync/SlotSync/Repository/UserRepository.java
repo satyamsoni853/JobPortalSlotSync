@@ -1,4 +1,4 @@
-package com.SlotSync.SlotSync.Repositary;
+package com.SlotSync.SlotSync.Repository;
 
 import com.SlotSync.SlotSync.Entity.User;        // your Mongo @Document
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -5,6 +5,7 @@ import com.SlotSync.SlotSync.Dto.UserDTO;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
 
 public interface UserService {
-    UserDTO registerUser(UserDTO userDto) throws JobPortalException;
-    UserDTO loginUser(LoginDTO loginDTO) throws JobPortalException; // <-- add this
+    String registerUser(UserDTO userDto) throws JobPortalException;
+    String loginUser(LoginDTO loginDTO) throws JobPortalException; // <-- add this
+    String sendOtp(String email) throws Exception; // <-- add this
 }
