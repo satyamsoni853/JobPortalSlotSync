@@ -2,19 +2,25 @@ package com.SlotSync.SlotSync.Service;
 
 import com.SlotSync.SlotSync.Dto.LoginDTO;
 import com.SlotSync.SlotSync.Dto.UserDTO;
+import com.SlotSync.SlotSync.Entity.OTP;
 import com.SlotSync.SlotSync.Entity.User;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
 import com.SlotSync.SlotSync.Repository.UserRepository;
+import com.SlotSync.SlotSync.Utilities.Data;
 import com.SlotSync.SlotSync.Utilities.Utilities;
-
 import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.LocalDateTime;
+import com.SlotSync.SlotSync.Repository.OTPRepositary;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +33,9 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JavaMailSender javaMailSender;
+    @Autowired
+    private OTPRepositary otpRepositary;
+
 
     @Override
     public String registerUser(UserDTO userDto) throws JobPortalException {
@@ -64,16 +73,61 @@ public class UserServiceImpl implements UserService {
     @Override
     public String sendOtp(String email) throws Exception {
         email = email == null ? null : email.trim().toLowerCase();
-        User user = userRepository.findByEmail(email)
+        userRepository.findByEmail(email)
                 .orElseThrow(() -> new JobPortalException("USER_NOT_FOUND"));
 
+        String generatedOtp = Utilities.generateOtp();
+        OTP otp = otpRepositary.findByEmail(email);
+
+        if (otp != null) {
+            otp.setOtp(generatedOtp);
+            otp.setCreationtimestamp(LocalDateTime.now());
+        } else {
+            otp = new OTP(email, generatedOtp, LocalDateTime.now());
+        }
+        otpRepositary.save(otp);
+
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+        helper.setText(String.format(Data.getMessageBody(email), generatedOtp), true);
         helper.setTo(email);
         helper.setSubject("Your OTP Code");
-        String otp = Utilities.generateOtp();
-        helper.setText("Your OTP is: " + otp);
+
         javaMailSender.send(mimeMessage);
         return "OTP sent successfully";
     }
-}
+    @Override
+    public String verifyOtp(String email,String otp) throws Exception {
+        OTP otpEntity = otpRepositary.findByEmail(email);
+           if (otpEntity == null) {
+               throw new JobPortalException("OTP_NOT_FOUND");
+           }
+           if (!otpEntity.getOtp().equals(otp)) {
+            throw new JobPortalException("INVALID_OTP");
+           }
+
+           return "OTP verified successfully";
+       }
+    @Override
+    public String changePassword(LoginDTO loginDTO) throws JobPortalException {
+        String email = loginDTO.getEmail() == null ? null : loginDTO.getEmail().trim().toLowerCase();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new JobPortalException("USER_NOT_FOUND"));
+
+        user.setPassword(passwordEncoder.encode(loginDTO.getPassword()));
+        userRepository.save(user);
+
+        return "Password changed successfully";
+    }
+
+    @Scheduled(fixedRate = 300000) // Runs every 5 minutes
+     public void RemoveExpiredOtps() {
+        LocalDateTime expirationTime = LocalDateTime.now().minusMinutes(5);
+        List<OTP> expiredOtps = otpRepositary.findAllByCreationTimeBefore(expirationTime);
+        if (!expiredOtps.isEmpty()) {
+            otpRepositary.deleteAll(expiredOtps);
+            System.out.println("Deleted " + expiredOtps.size() + " expired OTP(s).");
+        }
+    }
+   }

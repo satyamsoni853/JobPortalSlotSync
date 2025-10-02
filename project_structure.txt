@@ -1,0 +1,118 @@
+
+# Project Structure and Method Analysis for SlotSync
+
+This document provides a detailed breakdown of the project structure, key files, and the methods within them.
+
+---
+### 1. `pom.xml` (Project Object Model)
+- **Purpose**: The core configuration file for this Maven project.
+- **Function**: It defines the project's dependencies, build process, and metadata.
+- **Key Dependencies**:
+  - `spring-boot-starter-web`: For building RESTful web applications.
+  - `spring-boot-starter-data-mongodb`: For database interaction with MongoDB.
+  - `spring-boot-starter-security`: For handling authentication and authorization.
+  - `spring-boot-starter-mail`: For email functionalities (like sending OTP).
+  - `lombok`: To reduce boilerplate code (like getters, setters, constructors).
+
+---
+### 2. `SlotSyncApplication.java` (Application Entry Point)
+- **Purpose**: The main class that starts the entire Spring Boot application.
+- **Methods**:
+  - `public static void main(String[] args)`: This is the standard Java entry point. Spring Boot's `SpringApplication.run()` method is called here to launch the application context, scan for components, and start the embedded web server.
+
+---
+### 3. `Api/UserApi.java` (Controller Layer)
+- **Purpose**: Defines the public-facing REST API endpoints for user interactions. It handles incoming HTTP requests and delegates the business logic to the `UserService`.
+- **Dependencies**:
+  - `UserService`: Injected to perform business logic.
+- **Methods**:
+  - `@PostMapping("/register") public ResponseEntity<String> register(@RequestBody @Valid UserDTO userDto)`:
+    - **Trigger**: HTTP POST request to `/users/register`.
+    - **Function**: Receives user registration data (`UserDTO`), validates it (`@Valid`), and passes it to `userService.registerUser()`. Returns a `201 CREATED` status on success.
+  - `@PostMapping("/Login") public ResponseEntity<String> login(@RequestBody @Valid LoginDTO loginDTO)`:
+    - **Trigger**: HTTP POST request to `/users/Login`.
+    - **Function**: Receives user login credentials (`LoginDTO`), validates them, and passes them to `userService.loginUser()`. Returns a `200 OK` status on success.
+  - `@PostMapping("/sendOtp/{email}") public ResponseEntity<ResponseDTO> sendOtp(@PathVariable String email)`:
+    - **Trigger**: HTTP POST request to `/users/sendOtp/{user_email}`.
+    - **Function**: Receives an email from the path variable and calls `userService.sendOtp()` to initiate the OTP process. Returns a `200 OK` status.
+
+---
+### 4. `Service/UserService.java` (Service Interface)
+- **Purpose**: An interface that defines the business logic contract for user services. This promotes loose coupling.
+- **Methods**:
+  - `String registerUser(UserDTO userDto)`: Defines the functionality for registering a new user.
+  - `String loginUser(LoginDTO loginDTO)`: Defines the functionality for logging in a user.
+  - `String sendOtp(String email)`: Defines the functionality for sending an OTP to a user's email.
+
+---
+### 5. `Service/UserServiceImpl.java` (Service Implementation)
+- **Purpose**: The concrete implementation of the `UserService` interface. It contains the core business logic.
+- **Dependencies**:
+  - `UserRepository`: To interact with the user data in the database.
+  - `PasswordEncoder`: To securely hash and verify passwords.
+  - `JavaMailSender`: To send emails (for OTP).
+- **Methods**:
+  - `@Override public String registerUser(UserDTO userDto)`:
+    - **Function**: Checks if a user with the given email already exists using `userRepository.findByEmail()`. If not, it hashes the user's password with `passwordEncoder.encode()` and saves the new `User` entity to the database via `userRepository.save()`.
+  - `@Override public String loginUser(LoginDTO loginDTO)`:
+    - **Function**: Finds the user by email using `userRepository.findByEmail()`. If the user exists, it compares the provided password with the stored hash using `passwordEncoder.matches()`.
+  - `@Override public String sendOtp(String email)`:
+    - **Function**: Finds the user by email. If the user exists, it generates an OTP, creates an email message using `MimeMessageHelper`, and sends it via `javaMailSender.send()`.
+
+---
+### 6. `Repository/UserRepository.java` (Repository Interface)
+- **Purpose**: A Spring Data interface for database operations on the `User` entity.
+- **Inherited Methods (from `MongoRepository`)**:
+  - `save(S entity)`: Saves or updates an entity.
+  - `findById(ID id)`: Retrieves an entity by its ID.
+  - `findAll()`: Retrieves all entities.
+  - `delete(T entity)`: Deletes an entity.
+  - `count()`: Counts the number of entities.
+  - ...and many more CRUD (Create, Read, Update, Delete) and pagination methods.
+- **Custom Defined Methods**:
+  - `Optional<User> findByEmail(String email)`: A custom query method automatically implemented by Spring Data to find a `User` record by its `email` field.
+
+---
+### 7. `Entity/User.java` (Data Entity)
+- **Purpose**: Represents the `users` collection/table in the MongoDB database.
+- **Annotations**:
+  - `@Document(collection = "users")`: Specifies the MongoDB collection name.
+  - `@Id`: Marks the `id` field as the primary key.
+  - `@Indexed(unique = true)`: Ensures the `email` field is unique in the database.
+- **Predefined Methods (from Lombok)**:
+  - `@Getter/@Setter`: `getId()`, `setId()`, `getName()`, `setName()`, etc.
+  - `@ToString`: `toString()`
+  - `@AllArgsConstructor`: A constructor that accepts all fields.
+  - `@NoArgsConstructor`: A default no-argument constructor.
+- **Custom Methods**:
+  - `public UserDTO toDTO()`: Converts a `User` entity object into a `UserDTO` data transfer object.
+
+---
+### 8. `Dto/*.java` (Data Transfer Objects)
+- **Files**: `UserDTO.java`, `LoginDTO.java`, `ResponseDTO.java`, `AccountType.java`
+- **Purpose**: Simple Java objects used to transfer data between different layers of the application, particularly between the Controller and Service layers. They help prevent exposing internal entity structures to the outside world.
+- **Predefined Methods (from Lombok's @Data)**:
+  - Getters and Setters for all fields.
+  - `equals()`, `hashCode()`, and `toString()` methods.
+- **Custom Methods**:
+  - `UserDTO.toEntity()`: Converts the `UserDTO` back into a `User` entity, typically used before saving to the database.
+
+---
+### 9. `JobPortal/SecurityConfig.java` (Security Configuration)
+- **Purpose**: Configures the application's security settings using Spring Security.
+- **Methods**:
+  - `@Bean public PasswordEncoder passwordEncoder()`:
+    - **Function**: Creates and exposes a `BCryptPasswordEncoder` bean. This bean can be injected and used anywhere in the application (like in `UserServiceImpl`) to hash passwords.
+  - `@Bean public SecurityFilterChain securityFilterChain(HttpSecurity http)`:
+    - **Function**: Defines the rules for HTTP requests. In the current configuration, `req.requestMatchers("/**").permitAll()` allows all incoming requests to any URL without authentication. `http.csrf(csrf -> csrf.disable())` disables Cross-Site Request Forgery protection, which is common for stateless REST APIs.
+
+---
+### 10. `Utilities/ExceptionControllerAdvice.java` (Global Exception Handler)
+- **Purpose**: A centralized place to handle exceptions thrown from anywhere in the application. It ensures that API error responses are consistent.
+- **Methods**:
+  - `@ExceptionHandler({MethodArgumentNotValidException.class, ...}) public ResponseEntity<ErrorInfo> validatorExceptionHandler(Exception exception)`:
+    - **Function**: Catches exceptions related to validation (e.g., from `@Valid` in `UserApi`) and formats a user-friendly error message.
+  - `@ExceptionHandler(JobPortalException.class) public ResponseEntity<ErrorInfo> generalException(JobPortalException exception)`:
+    - **Function**: Catches the custom `JobPortalException` and wraps its message in a standardized `ErrorInfo` response.
+  - `@ExceptionHandler(Exception.class) public ResponseEntity<ErrorInfo> generalException(Exception exception)`:
+    - **Function**: A catch-all handler for any other unexpected exceptions, preventing stack traces from being exposed to the end-user.

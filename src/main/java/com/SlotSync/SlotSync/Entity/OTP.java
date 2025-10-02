@@ -20,6 +20,6 @@ public class OTP {
 @Id
     private String email;
     private String otp;
-    private LocalDateTime Creationtimestamp; // To track OTP expiry
+    private LocalDateTime creationTime; // To track OTP expiry
 
 }
