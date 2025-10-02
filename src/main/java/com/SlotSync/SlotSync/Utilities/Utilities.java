@@ -18,14 +18,14 @@ import org.springframework.stereotype.Component;
 public class Utilities {
 
     private static final String COUNTERS_COLLECTION = "counters"; // collection to store sequences
-    private static MongoOperations mongoOperations;
+    private final MongoOperations mongoOperations;
 
     @Autowired
-    public void setMongoOperations(MongoOperations mongoOperations) {
-        Utilities.mongoOperations = mongoOperations;
+    public Utilities(MongoOperations mongoOperations) {
+        this.mongoOperations = mongoOperations;
     }
 
-    public static Long getNextSequence(String key) throws JobPortalException {
+    public Long getNextSequence(String key) throws JobPortalException {
         Query query = new Query(Criteria.where("_id").is(key));
         Update update = new Update().inc("seq", 1L);
         FindAndModifyOptions options = new FindAndModifyOptions();

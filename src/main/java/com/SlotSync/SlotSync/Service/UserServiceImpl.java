@@ -36,6 +36,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private OTPRepositary otpRepositary;
 
+    @Autowired
+    private Utilities utilities;
+
 
     @Override
     public String registerUser(UserDTO userDto) throws JobPortalException {
@@ -47,7 +50,7 @@ public class UserServiceImpl implements UserService {
             throw new JobPortalException("User already exists");
         }
 
-        userDto.setId(String.valueOf(Utilities.getNextSequence("users")));
+        userDto.setId(String.valueOf(utilities.getNextSequence("users")));
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         // keep normalized email in entity
         User user = new User(userDto.getId(), userDto.getName(), email, userDto.getPassword(), userDto.getAccountType());
@@ -77,11 +80,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new JobPortalException("USER_NOT_FOUND"));
 
         String generatedOtp = Utilities.generateOtp();
-        OTP otp = otpRepositary.findByEmail(email);
+        Optional<OTP> otpOptional = otpRepositary.findByEmail(email);
 
-        if (otp != null) {
+        OTP otp;
+        if (otpOptional.isPresent()) {
+            otp = otpOptional.get();
             otp.setOtp(generatedOtp);
-            otp.setCreationtimestamp(LocalDateTime.now());
+            otp.setCreationTime(LocalDateTime.now());
         } else {
             otp = new OTP(email, generatedOtp, LocalDateTime.now());
         }
@@ -98,10 +103,9 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public String verifyOtp(String email,String otp) throws Exception {
-        OTP otpEntity = otpRepositary.findByEmail(email);
-           if (otpEntity == null) {
-               throw new JobPortalException("OTP_NOT_FOUND");
-           }
+        OTP otpEntity = otpRepositary.findByEmail(email)
+                .orElseThrow(() -> new JobPortalException("OTP_NOT_FOUND"));
+
            if (!otpEntity.getOtp().equals(otp)) {
             throw new JobPortalException("INVALID_OTP");
            }

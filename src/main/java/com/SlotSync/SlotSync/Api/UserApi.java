@@ -40,8 +40,8 @@ public class UserApi {
         return new ResponseEntity<>(message, HttpStatus.OK);
         // alternatively: return ResponseEntity.ok(loggedIn);
     }
-    @PostMapping("/changePassword")
-    public ResponseEntity<ResponseDTO> postMethodName(@RequestBody @Valid LoginDTO loginDTO) throws JobPortalException {
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseDTO> forgotPassword(@RequestBody @Valid LoginDTO loginDTO) throws JobPortalException {
 
         return new ResponseEntity<>(new ResponseDTO(userService.changePassword(loginDTO)), HttpStatus.OK);
     }

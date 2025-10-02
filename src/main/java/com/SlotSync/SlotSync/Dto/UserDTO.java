@@ -4,6 +4,7 @@ import com.SlotSync.SlotSync.Entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,17 +17,14 @@ public class UserDTO {
     private String id;
 
     @NotBlank(message = "{user.name.absent}")
-    private String name; // FIX: must be String for @NotBlank
+    private String name;
 
     @NotBlank(message = "{user.email.absent}")
     @Email(message = "{user.email.invalid}")
     private String email;
 
     @NotBlank(message = "{user.password.absent}")
-    @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,64}$",
-            message = "{user.password.weak}"
-    )
+    @Size(min = 8, max = 64, message = "{user.password.size}")
     private String password;
 
     private AccountType accountType;
