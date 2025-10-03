@@ -1,6 +1,7 @@
 package com.SlotSync.SlotSync.Service;
 
 import com.SlotSync.SlotSync.Dto.LoginDTO;
+import com.SlotSync.SlotSync.Dto.ResetPasswordDTO;
 import com.SlotSync.SlotSync.Dto.UserDTO;
 import com.SlotSync.SlotSync.Entity.OTP;
 import com.SlotSync.SlotSync.Entity.User;
@@ -133,5 +134,23 @@ public class UserServiceImpl implements UserService {
             otpRepositary.deleteAll(expiredOtps);
             System.out.println("Deleted " + expiredOtps.size() + " expired OTP(s).");
         }
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO) throws JobPortalException {
+        try {
+            verifyOtp(resetPasswordDTO.getEmail(), resetPasswordDTO.getOtp());
+        } catch (Exception e) {
+            throw new JobPortalException(e.getMessage());
+        }
+
+        String email = resetPasswordDTO.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new JobPortalException("USER_NOT_FOUND"));
+
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+        userRepository.save(user);
+
+        return "Password reset successfully";
     }
    }

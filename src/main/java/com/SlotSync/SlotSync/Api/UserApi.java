@@ -1,6 +1,7 @@
 package com.SlotSync.SlotSync.Api;
 
 import com.SlotSync.SlotSync.Dto.LoginDTO;
+import com.SlotSync.SlotSync.Dto.ResetPasswordDTO;
 import com.SlotSync.SlotSync.Dto.ResponseDTO;
 import com.SlotSync.SlotSync.Dto.UserDTO;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
@@ -59,6 +60,13 @@ public class UserApi {
     public ResponseEntity<ResponseDTO> verifyOtp(@PathVariable @Email(message = "Invalid email format") String email,
             @Pattern(regexp = "^[0-9]{6}$", message = "Invalid OTP format") @PathVariable String otp) throws Exception {
         String message = userService.verifyOtp(email, otp);
+        ResponseDTO response = new ResponseDTO(message);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseDTO> resetPassword(@RequestBody @Valid ResetPasswordDTO resetPasswordDTO) throws JobPortalException {
+        String message = userService.resetPassword(resetPasswordDTO);
         ResponseDTO response = new ResponseDTO(message);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
