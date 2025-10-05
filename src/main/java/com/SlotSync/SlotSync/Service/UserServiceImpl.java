@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String loginUser(LoginDTO loginDTO) throws JobPortalException {
+    public UserDTO loginUser(LoginDTO loginDTO) throws JobPortalException {
         String email = loginDTO.getEmail() == null ? null : loginDTO.getEmail().trim().toLowerCase();
 
         User user = userRepository.findByEmail(email)
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
             throw new JobPortalException("Invalid email or password");
         }
 
-        return "Login successfully";
+        return user.toDTO();
     }
     @Override
     public String sendOtp(String email) throws Exception {

@@ -36,10 +36,9 @@ public class UserApi {
     // Kept your path segment "Login" to avoid unnecessary change; switched to POST
     // to accept a body
     @PostMapping("/Login")
-    public ResponseEntity<String> login(@RequestBody @Valid LoginDTO loginDTO) throws JobPortalException {
-        String message = userService.loginUser(loginDTO);
-        return new ResponseEntity<>(message, HttpStatus.OK);
-        // alternatively: return ResponseEntity.ok(loggedIn);
+    public ResponseEntity<UserDTO> login(@RequestBody @Valid LoginDTO loginDTO) throws JobPortalException {
+        UserDTO userDto = userService.loginUser(loginDTO);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseDTO> forgotPassword(@RequestBody @Valid LoginDTO loginDTO) throws JobPortalException {
