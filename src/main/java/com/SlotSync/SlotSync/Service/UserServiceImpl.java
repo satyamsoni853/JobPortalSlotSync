@@ -2,15 +2,13 @@ package com.SlotSync.SlotSync.Service;
 
 import com.SlotSync.SlotSync.Dto.LoginDTO;
 import com.SlotSync.SlotSync.Dto.ResetPasswordDTO;
-import com.SlotSync.SlotSync.Dto.UserDTO;
+import com.SlotSync.SlotSync.Dto.UserDTO; // FIX: Corrected return type and logic
 import com.SlotSync.SlotSync.Entity.OTP;
-import com.SlotSync.SlotSync.Entity.Profile;
 import com.SlotSync.SlotSync.Entity.User;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
 import com.SlotSync.SlotSync.Repository.UserRepository;
 import com.SlotSync.SlotSync.UtilitiesFile.Data;
 import com.SlotSync.SlotSync.UtilitiesFile.Utilities;
-
 
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,17 +48,17 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDTO registerUser(UserDTO userDto) throws JobPortalException {
+    public String registerUser(UserDTO userDto) throws JobPortalException {
        Optional <User> optional =userRepository.findByEmail(userDto.getEmail().trim().toLowerCase());
        if(optional.isPresent()){
-        throw new JobPortalException("USER_ALREADY_EXISTS");
+        throw new JobPortalException("USER_FOUND"); // Using key from ValidationMessage.properties
        }
-       userDto.setProfileId(ProfileService.createProfile(userDto.getEmail());
+       userDto.setProfileId(profileService.createProfile(userDto.getEmail()));
        userDto.setId(String.valueOf(utilities.getNextSequence("user")));
        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
        User user =userDto.toEntity();
-       user=userRepository.save(user);
-       return user.toDTO();
+       userRepository.save(user);
+       return "User registered successfully.";
     }
 
     @Override

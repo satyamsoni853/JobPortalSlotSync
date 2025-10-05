@@ -1,7 +1,8 @@
 package com.SlotSync.SlotSync.Service;
 
+import com.SlotSync.SlotSync.Dto.ProfileDTO;
 import com.SlotSync.SlotSync.Entity.Profile;
-import com.SlotSync.SlotSync.Exception.JobPortalException;
+import com.SlotSync.SlotSync.Exception.JobPortalException; // FIX: Add missing import
 import com.SlotSync.SlotSync.Repository.ProfileRepository;
 
 import com.SlotSync.SlotSync.UtilitiesFile.Utilities;
@@ -23,9 +24,6 @@ public class ProfileServiceImpl implements ProfileService {
     this.utilities = utilities;
   }
 
-  @Autowired
-  ProfileService profileService;
-
   @Override
   public Long createProfile(String email) throws JobPortalException {
     // Implementation for creating a profile
@@ -40,6 +38,20 @@ public class ProfileServiceImpl implements ProfileService {
     profileRepository.save(profile);
     return profile.getId();
 
+  }
+
+  @Override
+  public ProfileDTO getProfile(Long id) throws JobPortalException {
+
+    return profileRepository.findById(id).orElseThrow(() -> new JobPortalException("PROFILE_NOT_FOUND")).toDto();
+  }
+
+  @Override
+  public ProfileDTO updateProfile(ProfileDTO profileDTO) throws JobPortalException {
+    profileRepository.findById(profileDTO.getId())
+        .orElseThrow(() -> new JobPortalException("PROFILE_NOT_FOUND"));
+
+    return profileRepository.save(profileDTO.toEntity()).toDto();
   }
 
 }

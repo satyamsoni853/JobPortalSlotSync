@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.SlotSync.SlotSync.Entity.Profile;
 
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileDTO {
+  @Id
+  private Long id;
   private String email;
   private String about;
   private String jobTitle;
@@ -24,7 +27,7 @@ public class ProfileDTO {
   private List<String> educations;
 
   public Profile toEntity(){
-    return new Profile(null, email, about, jobTitle, company, location, skills, experiences, certifications, educations);
+    return new Profile(id, email, about, jobTitle, company, location, skills, experiences, certifications, educations);
   }
 
 }

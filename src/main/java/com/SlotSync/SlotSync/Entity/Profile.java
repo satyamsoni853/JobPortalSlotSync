@@ -19,22 +19,21 @@ import lombok.NoArgsConstructor;
 public class Profile {
 
   @Id
+  private Long id;
 
-    private Long id;
-    
-    private String email;
-    private String about;
-    private String jobTitle;
-    private String company;
-    private String location;
-    private List<String> skills;
-    private List<String> experiences;
-    private List<String> certifications;
-    private List<String> educations;
+  private String email;
+  private String about;
+  private String jobTitle;
+  private String company;
+  private String location;
+  private List<String> skills;
+  private List<String> experiences;
+  private List<String> certifications;
+  private List<String> educations;
 
-    public ProfileDTO toDto(){
-      return new ProfileDTO(email, about, jobTitle, company, location, skills, experiences, certifications, educations);
-    }
+  public ProfileDTO toDto() {
+    return new ProfileDTO(id, email, about, jobTitle, company, location, skills, experiences, certifications,
+        educations);
+  }
 
-  
 }
