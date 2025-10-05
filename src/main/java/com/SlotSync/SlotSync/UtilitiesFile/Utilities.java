@@ -1,4 +1,4 @@
-package com.SlotSync.SlotSync.Utilities;
+package com.SlotSync.SlotSync.UtilitiesFile;
 
 import com.SlotSync.SlotSync.Entity.Sequence;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
@@ -30,6 +30,7 @@ public class Utilities {
         Update update = new Update().inc("seq", 1L);
         FindAndModifyOptions options = new FindAndModifyOptions();
         options.returnNew(true);
+        options.upsert(true);
 
         Sequence seq = mongoOperations.findAndModify(query, update, options, Sequence.class);
         if (seq == null) throw new JobPortalException("Unable to get sequence id for key :" + key);
@@ -46,4 +47,3 @@ public class Utilities {
     }
      
     }
-

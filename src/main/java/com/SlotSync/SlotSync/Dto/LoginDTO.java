@@ -17,7 +17,7 @@ public class LoginDTO {
 
     @NotBlank(message = "{user.password.absent}")
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,64}$",
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;':\",./<>?]).{8,64}$",
             message = "{user.password.weak}"
     )
     private String password;

@@ -4,11 +4,14 @@ import com.SlotSync.SlotSync.Dto.LoginDTO;
 import com.SlotSync.SlotSync.Dto.ResetPasswordDTO;
 import com.SlotSync.SlotSync.Dto.UserDTO;
 import com.SlotSync.SlotSync.Entity.OTP;
+import com.SlotSync.SlotSync.Entity.Profile;
 import com.SlotSync.SlotSync.Entity.User;
 import com.SlotSync.SlotSync.Exception.JobPortalException;
 import com.SlotSync.SlotSync.Repository.UserRepository;
-import com.SlotSync.SlotSync.Utilities.Data;
-import com.SlotSync.SlotSync.Utilities.Utilities;
+import com.SlotSync.SlotSync.UtilitiesFile.Data;
+import com.SlotSync.SlotSync.UtilitiesFile.Utilities;
+
+
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,28 +40,27 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private OTPRepositary otpRepositary;
 
+    private final Utilities utilities;
+    UserServiceImpl(Utilities utilities) {
+        this.utilities = utilities;
+    }
+
     @Autowired
-    private Utilities utilities;
+    private ProfileService profileService;
 
 
     @Override
-    public String registerUser(UserDTO userDto) throws JobPortalException {
-        System.out.println("Registering user DTO: " + userDto);
-
-        String email = userDto.getEmail() == null ? null : userDto.getEmail().trim().toLowerCase();
-        Optional<User> optional = userRepository.findByEmail(email);
-        if (optional.isPresent()) {
-            throw new JobPortalException("User already exists");
-        }
-
-        userDto.setId(String.valueOf(utilities.getNextSequence("users")));
-        userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        // keep normalized email in entity
-        User user = new User(userDto.getId(), userDto.getName(), email, userDto.getPassword(), userDto.getAccountType());
-
-        userRepository.save(user);
-
-        return "Register successfully";
+    public UserDTO registerUser(UserDTO userDto) throws JobPortalException {
+       Optional <User> optional =userRepository.findByEmail(userDto.getEmail().trim().toLowerCase());
+       if(optional.isPresent()){
+        throw new JobPortalException("USER_ALREADY_EXISTS");
+       }
+       userDto.setProfileId(ProfileService.createProfile(userDto.getEmail());
+       userDto.setId(String.valueOf(utilities.getNextSequence("user")));
+       userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+       User user =userDto.toEntity();
+       user=userRepository.save(user);
+       return user.toDTO();
     }
 
     @Override

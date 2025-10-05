@@ -31,6 +31,7 @@ public class User {
     private String password;
 
     private AccountType accountType;
+    private Long profileId;
 
     public UserDTO toDTO() {
         return new UserDTO(
@@ -38,7 +39,8 @@ public class User {
             this.name,
             this.email,
             this.password,
-            this.accountType
+            this.accountType,
+            this.profileId
         );
     }
 }

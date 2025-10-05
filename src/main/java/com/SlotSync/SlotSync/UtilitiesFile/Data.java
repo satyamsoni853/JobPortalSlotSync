@@ -1,4 +1,4 @@
-package com.SlotSync.SlotSync.Utilities;
+package com.SlotSync.SlotSync.UtilitiesFile;
 
 public class Data {
   public static String getMessageBody(String otp) {

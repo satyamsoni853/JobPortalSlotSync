@@ -22,7 +22,7 @@ public class ResetPasswordDTO {
 
     @NotBlank(message = "{user.password.absent}")
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\[\]{}|;':\",./<>?]).{8,64}$",
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;':\",./<>?]).{8,64}$",
             message = "{user.password.weak}"
     )
     private String newPassword;

@@ -24,14 +24,15 @@ public class UserDTO {
 
     @NotBlank(message = "{user.password.absent}")
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\[\]{}|;':\",./<>?]).{8,64}$",
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{}|;':\",./<>?]).{8,64}$",
             message = "{user.password.weak}"
     )
     private String password;
 
     private AccountType accountType;
+    private Long profileId;
 
     public User toEntity() {
-        return new User(this.id, this.name, this.email, this.password, this.accountType);
+        return new User(this.id, this.name, this.email, this.password, this.accountType, this.profileId);
     }
 }

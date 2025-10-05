@@ -1,4 +1,4 @@
-package com.SlotSync.SlotSync.Utilities;
+package com.SlotSync.SlotSync.UtilitiesFile;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
